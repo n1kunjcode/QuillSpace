@@ -3,9 +3,7 @@ import { createPortal } from "react-dom";
 
 export default function Modal({ isOpen, onClose, title, children, actions }) {
     useEffect(() => {
-        const handleEsc = (e) => {
-            if (e.key === "Escape") onClose();
-        };
+        const handleEsc = (e) => { if (e.key === "Escape") onClose(); };
         if (isOpen) window.addEventListener("keydown", handleEsc);
         return () => window.removeEventListener("keydown", handleEsc);
     }, [isOpen, onClose]);
@@ -13,24 +11,48 @@ export default function Modal({ isOpen, onClose, title, children, actions }) {
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl animate-in fade-in zoom-in duration-200">
-                <div className="flex items-center justify-between p-4 border-b border-neutral-800">
-                    <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <div
+            onClick={onClose}
+            style={{
+                position: "fixed", inset: 0, zIndex: 1000,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)",
+                padding: 16,
+            }}
+        >
+            <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                    width: "100%", maxWidth: 420,
+                    background: "#161616",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 14,
+                    boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+                    fontFamily: "'DM Sans', system-ui, sans-serif",
+                    animation: "modalIn 0.18s ease",
+                }}
+            >
+                <style>{`@keyframes modalIn { from { opacity:0; transform:scale(0.95) translateY(6px); } to { opacity:1; transform:scale(1) translateY(0); } }`}</style>
+
+                {/* Header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "#fff" }}>{title}</h3>
                     <button
                         onClick={onClose}
-                        className="text-neutral-400 hover:text-white transition-colors"
-                    >
-                        ✕
-                    </button>
+                        style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "2px 6px", borderRadius: 6, transition: "color 0.15s" }}
+                        onMouseEnter={e => e.target.style.color = "#ccc"}
+                        onMouseLeave={e => e.target.style.color = "#555"}
+                    >✕</button>
                 </div>
 
-                <div className="p-4 text-neutral-300">
+                {/* Body */}
+                <div style={{ padding: "16px 20px", color: "#999" }}>
                     {children}
                 </div>
 
+                {/* Actions */}
                 {actions && (
-                    <div className="flex justify-end gap-2 p-4 pt-0">
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "0 20px 16px" }}>
                         {actions}
                     </div>
                 )}
