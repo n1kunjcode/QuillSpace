@@ -54,6 +54,9 @@ app.use("/api/notes", noteRoutes);
 const uploadRoutes = require("./routes/upload");
 app.use("/api/upload", uploadRoutes);
 
+const adminRoutes = require("./routes/admin");
+app.use("/api/admin", adminRoutes);
+
 // ===== health check =====
 app.get("/", (req, res) => res.json({ status: "ok", app: "QuillSpace API" }));
 

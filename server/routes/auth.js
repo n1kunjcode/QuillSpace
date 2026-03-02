@@ -13,7 +13,7 @@ function signToken(userId) {
 }
 
 function userPayload(user) {
-  return { id: user._id, name: user.name, email: user.email, picture: user.picture || null };
+  return { id: user._id, name: user.name, email: user.email, picture: user.picture || null, isAdmin: user.isAdmin || false };
 }
 
 // ─── Local Register ──────────────────────────────────────────────
@@ -81,6 +81,9 @@ router.post("/login", async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Invalid email or password" });
 
+    user.lastLoginAt = new Date();
+    await user.save();
+
     res.json({
       message: "Login successful",
       token: signToken(user._id),
@@ -135,6 +138,9 @@ router.post("/google", async (req, res) => {
         // No password for Google users
       });
     }
+
+    user.lastLoginAt = new Date();
+    await user.save();
 
     res.json({
       message: "Google login successful",

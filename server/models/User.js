@@ -32,6 +32,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       sparse: true, // allows multiple null values (non-Google users)
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    lastLoginAt: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );

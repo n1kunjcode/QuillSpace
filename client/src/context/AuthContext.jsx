@@ -56,9 +56,10 @@ export function AuthProvider({ children }) {
   };
 
   const isAuthenticated = !!user;
+  const isAdmin = !!(userMeta && userMeta.isAdmin);
 
   return (
-    <AuthContext.Provider value={{ user, userMeta, login, logout, isAuthenticated, authLoading }}>
+    <AuthContext.Provider value={{ user, userMeta, login, logout, isAuthenticated, authLoading, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
