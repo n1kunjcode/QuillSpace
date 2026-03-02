@@ -62,6 +62,10 @@ router.post("/login", async (req, res) => {
     if (!email || !password)
       return res.status(400).json({ message: "All fields required" });
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email))
+      return res.status(400).json({ message: "Please enter a valid email address" });
+
     const user = await User.findOne({ email: email.toLowerCase() });
 
     // If user exists but registered via Google, give a helpful message

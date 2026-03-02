@@ -171,6 +171,11 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
     setLoading(true); setError("");
     try {
       const res = await api.post("/auth/register", { name, email, password });
@@ -180,6 +185,7 @@ export default function Register() {
       setError(err.response?.data?.message || "Registration failed. Try again.");
     } finally { setLoading(false); }
   };
+
 
   return (
     <>

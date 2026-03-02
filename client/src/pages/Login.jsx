@@ -230,6 +230,11 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
     setLoading(true); setError("");
     try {
       const res = await api.post("/auth/login", { email, password });
@@ -239,6 +244,7 @@ export default function Login() {
       setError(err.response?.data?.message || "Invalid email or password");
     } finally { setLoading(false); }
   };
+
 
   return (
     <>
