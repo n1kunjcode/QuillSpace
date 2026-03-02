@@ -166,11 +166,16 @@ export default function Register() {
     const btn = document.querySelector("#google-register-btn-container div[role=button]");
     if (btn) {
       btn.click();
-    } else {
-      setGoogleLoading(false);
-      setError("Google sign-in could not be initialized. Please refresh and try again.");
+      return;
     }
+    // Fallback: call prompt() directly — ux_mode: 'popup' opens a proper popup window
+    window.google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        setGoogleLoading(false);
+      }
+    });
   };
+
 
   const handleRegister = async (e) => {
     e.preventDefault();

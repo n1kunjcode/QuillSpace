@@ -226,14 +226,18 @@ export default function Login() {
     }
     setGoogleLoading(true);
     setError("");
-    // Click the hidden Google-rendered button to open the popup
+    // Try clicking the hidden Google-rendered button (available after iframe loads)
     const btn = document.querySelector("#google-btn-container div[role=button]");
     if (btn) {
       btn.click();
-    } else {
-      setGoogleLoading(false);
-      setError("Google sign-in could not be initialized. Please refresh and try again.");
+      return;
     }
+    // Fallback: call prompt() directly — ux_mode: 'popup' opens a proper popup window
+    window.google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        setGoogleLoading(false);
+      }
+    });
   };
 
   const handleLogin = async (e) => {
