@@ -128,22 +128,25 @@ export default function Register() {
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;
     const existing = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    const onLoad = () => renderGoogleButton();
     if (existing) {
-      initGoogle();
+      if (window.google) renderGoogleButton();
+      else existing.addEventListener("load", onLoad);
       return;
     }
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
-    script.onload = initGoogle;
+    script.onload = onLoad;
     document.head.appendChild(script);
   }, []);
 
-  const initGoogle = () => {
+  const renderGoogleButton = () => {
     if (!window.google || !GOOGLE_CLIENT_ID) return;
     window.google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: async ({ credential }) => {
+        setGoogleLoading(true); setError("");
         try {
           const res = await api.post("/auth/google", { credential });
           login(res.data.token, res.data.user);
@@ -152,28 +155,17 @@ export default function Register() {
           setError(err.response?.data?.message || "Google sign-in failed.");
         } finally { setGoogleLoading(false); }
       },
-      ux_mode: "popup",
     });
-    window.google.accounts.id.renderButton(
-      document.getElementById("google-register-btn-container"),
-      { theme: "filled_black", size: "large", width: 400, text: "signup_with" }
-    );
-  };
-
-  const handleGoogleRegister = () => {
-    if (!window.google || !GOOGLE_CLIENT_ID) { setError("Google sign-in is not configured."); return; }
-    setGoogleLoading(true); setError("");
-    const btn = document.querySelector("#google-register-btn-container div[role=button]");
-    if (btn) {
-      btn.click();
-      return;
+    const container = document.getElementById("google-register-btn-container");
+    if (container) {
+      window.google.accounts.id.renderButton(container, {
+        theme: "filled_black",
+        size: "large",
+        width: 368,
+        text: "signup_with",
+        shape: "rectangular",
+      });
     }
-    // Fallback: call prompt() directly — ux_mode: 'popup' opens a proper popup window
-    window.google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        setGoogleLoading(false);
-      }
-    });
   };
 
 
@@ -213,12 +205,22 @@ export default function Register() {
 
           {GOOGLE_CLIENT_ID && (
             <>
-              <button className="google-btn" onClick={handleGoogleRegister} disabled={googleLoading}>
-                {googleLoading ? <span className="spinner" style={{ borderTopColor: "#fff", borderColor: "rgba(255,255,255,0.2)" }} /> : <GoogleIcon />}
-                {googleLoading ? "Connecting…" : "Sign up with Google"}
-              </button>
-              {/* Hidden container — Google renders its real button here, we click it programmatically */}
-              <div id="google-register-btn-container" style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 1, height: 1, overflow: "hidden" }} />
+              {googleLoading && (
+                <div className="google-btn" style={{ pointerEvents: "none" }}>
+                  <span className="spinner" style={{ borderTopColor: "#fff", borderColor: "rgba(255,255,255,0.2)" }} />
+                  Connecting…
+                </div>
+              )}
+              <div
+                id="google-register-btn-container"
+                style={{
+                  display: googleLoading ? "none" : "block",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  marginBottom: 20,
+                  minHeight: 44,
+                }}
+              />
               <div className="divider">
                 <div className="divider-line" />
                 <span className="divider-text">or</span>

@@ -181,26 +181,30 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Load Google Identity Services script and initialize on load
+  // Load Google Identity Services and render the real Google button
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;
     const existing = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    const onLoad = () => renderGoogleButton();
     if (existing) {
-      initGoogle();
+      if (window.google) renderGoogleButton();
+      else existing.addEventListener("load", onLoad);
       return;
     }
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
-    script.onload = initGoogle;
+    script.onload = onLoad;
     document.head.appendChild(script);
   }, []);
 
-  const initGoogle = () => {
+  const renderGoogleButton = () => {
     if (!window.google || !GOOGLE_CLIENT_ID) return;
     window.google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: async ({ credential }) => {
+        setGoogleLoading(true);
+        setError("");
         try {
           const res = await api.post("/auth/google", { credential });
           login(res.data.token, res.data.user);
@@ -211,33 +215,17 @@ export default function Login() {
           setGoogleLoading(false);
         }
       },
-      ux_mode: "popup",
     });
-    window.google.accounts.id.renderButton(
-      document.getElementById("google-btn-container"),
-      { theme: "filled_black", size: "large", width: 400, text: "signin_with" }
-    );
-  };
-
-  const handleGoogleLogin = () => {
-    if (!window.google || !GOOGLE_CLIENT_ID) {
-      setError("Google sign-in is not configured.");
-      return;
+    const container = document.getElementById("google-btn-container");
+    if (container) {
+      window.google.accounts.id.renderButton(container, {
+        theme: "filled_black",
+        size: "large",
+        width: 368,
+        text: "signin_with",
+        shape: "rectangular",
+      });
     }
-    setGoogleLoading(true);
-    setError("");
-    // Try clicking the hidden Google-rendered button (available after iframe loads)
-    const btn = document.querySelector("#google-btn-container div[role=button]");
-    if (btn) {
-      btn.click();
-      return;
-    }
-    // Fallback: call prompt() directly — ux_mode: 'popup' opens a proper popup window
-    window.google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        setGoogleLoading(false);
-      }
-    });
   };
 
   const handleLogin = async (e) => {
@@ -266,15 +254,25 @@ export default function Login() {
           <h1 className="auth-title">Welcome back</h1>
           <p className="auth-subtitle">Sign in to your notes</p>
 
-          {/* Google sign in */}
+          {/* Google sign in — rendered directly by GSI (bypasses FedCM issues) */}
           {GOOGLE_CLIENT_ID && (
             <>
-              <button className="google-btn" onClick={handleGoogleLogin} disabled={googleLoading}>
-                {googleLoading ? <span className="spinner" style={{ borderTopColor: "#fff", borderColor: "rgba(255,255,255,0.2)" }} /> : <GoogleIcon />}
-                {googleLoading ? "Signing in…" : "Continue with Google"}
-              </button>
-              {/* Hidden container — Google renders its real button here, we click it programmatically */}
-              <div id="google-btn-container" style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 1, height: 1, overflow: "hidden" }} />
+              {googleLoading && (
+                <div className="google-btn" style={{ pointerEvents: "none" }}>
+                  <span className="spinner" style={{ borderTopColor: "#fff", borderColor: "rgba(255,255,255,0.2)" }} />
+                  Signing in…
+                </div>
+              )}
+              <div
+                id="google-btn-container"
+                style={{
+                  display: googleLoading ? "none" : "block",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  marginBottom: 20,
+                  minHeight: 44,
+                }}
+              />
               <div className="divider">
                 <div className="divider-line" />
                 <span className="divider-text">or</span>
