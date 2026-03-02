@@ -181,23 +181,23 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Load Google Identity Services script
+  // Load Google Identity Services script and initialize on load
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;
+    const existing = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    if (existing) {
+      initGoogle();
+      return;
+    }
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
+    script.onload = initGoogle;
     document.head.appendChild(script);
-    return () => { document.head.removeChild(script); };
   }, []);
 
-  const handleGoogleLogin = () => {
-    if (!window.google || !GOOGLE_CLIENT_ID) {
-      setError("Google sign-in is not configured.");
-      return;
-    }
-    setGoogleLoading(true);
-    setError("");
+  const initGoogle = () => {
+    if (!window.google || !GOOGLE_CLIENT_ID) return;
     window.google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: async ({ credential }) => {
@@ -211,17 +211,29 @@ export default function Login() {
           setGoogleLoading(false);
         }
       },
+      ux_mode: "popup",
     });
-    window.google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        setGoogleLoading(false);
-        // Fallback: render button popup
-        window.google.accounts.id.renderButton(
-          document.getElementById("google-btn-container"),
-          { theme: "filled_black", size: "large", width: 352 }
-        );
-      }
-    });
+    window.google.accounts.id.renderButton(
+      document.getElementById("google-btn-container"),
+      { theme: "filled_black", size: "large", width: 400, text: "signin_with" }
+    );
+  };
+
+  const handleGoogleLogin = () => {
+    if (!window.google || !GOOGLE_CLIENT_ID) {
+      setError("Google sign-in is not configured.");
+      return;
+    }
+    setGoogleLoading(true);
+    setError("");
+    // Click the hidden Google-rendered button to open the popup
+    const btn = document.querySelector("#google-btn-container div[role=button]");
+    if (btn) {
+      btn.click();
+    } else {
+      setGoogleLoading(false);
+      setError("Google sign-in could not be initialized. Please refresh and try again.");
+    }
   };
 
   const handleLogin = async (e) => {
@@ -257,8 +269,8 @@ export default function Login() {
                 {googleLoading ? <span className="spinner" style={{ borderTopColor: "#fff", borderColor: "rgba(255,255,255,0.2)" }} /> : <GoogleIcon />}
                 {googleLoading ? "Signing in…" : "Continue with Google"}
               </button>
-              {/* Hidden container for Google's rendered button if prompt fails */}
-              <div id="google-btn-container" style={{ marginBottom: 8 }} />
+              {/* Hidden container — Google renders its real button here, we click it programmatically */}
+              <div id="google-btn-container" style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 1, height: 1, overflow: "hidden" }} />
               <div className="divider">
                 <div className="divider-line" />
                 <span className="divider-text">or</span>

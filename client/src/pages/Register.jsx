@@ -127,16 +127,20 @@ export default function Register() {
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;
+    const existing = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    if (existing) {
+      initGoogle();
+      return;
+    }
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
+    script.onload = initGoogle;
     document.head.appendChild(script);
-    return () => { document.head.removeChild(script); };
   }, []);
 
-  const handleGoogleRegister = () => {
-    if (!window.google || !GOOGLE_CLIENT_ID) { setError("Google sign-in is not configured."); return; }
-    setGoogleLoading(true); setError("");
+  const initGoogle = () => {
+    if (!window.google || !GOOGLE_CLIENT_ID) return;
     window.google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: async ({ credential }) => {
@@ -148,10 +152,24 @@ export default function Register() {
           setError(err.response?.data?.message || "Google sign-in failed.");
         } finally { setGoogleLoading(false); }
       },
+      ux_mode: "popup",
     });
-    window.google.accounts.id.prompt((n) => {
-      if (n.isNotDisplayed() || n.isSkippedMoment()) setGoogleLoading(false);
-    });
+    window.google.accounts.id.renderButton(
+      document.getElementById("google-register-btn-container"),
+      { theme: "filled_black", size: "large", width: 400, text: "signup_with" }
+    );
+  };
+
+  const handleGoogleRegister = () => {
+    if (!window.google || !GOOGLE_CLIENT_ID) { setError("Google sign-in is not configured."); return; }
+    setGoogleLoading(true); setError("");
+    const btn = document.querySelector("#google-register-btn-container div[role=button]");
+    if (btn) {
+      btn.click();
+    } else {
+      setGoogleLoading(false);
+      setError("Google sign-in could not be initialized. Please refresh and try again.");
+    }
   };
 
   const handleRegister = async (e) => {
@@ -194,6 +212,8 @@ export default function Register() {
                 {googleLoading ? <span className="spinner" style={{ borderTopColor: "#fff", borderColor: "rgba(255,255,255,0.2)" }} /> : <GoogleIcon />}
                 {googleLoading ? "Connecting…" : "Sign up with Google"}
               </button>
+              {/* Hidden container — Google renders its real button here, we click it programmatically */}
+              <div id="google-register-btn-container" style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 1, height: 1, overflow: "hidden" }} />
               <div className="divider">
                 <div className="divider-line" />
                 <span className="divider-text">or</span>
@@ -201,6 +221,7 @@ export default function Register() {
               </div>
             </>
           )}
+
 
           {error && <motion.div className="error-box" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>{error}</motion.div>}
 
