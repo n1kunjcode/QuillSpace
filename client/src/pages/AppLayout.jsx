@@ -18,7 +18,6 @@ const css = `
     position: relative;
   }
 
-  /* Desktop: sidebar always visible */
   .app-sidebar-desktop {
     height: 100%;
     flex-shrink: 0;
@@ -52,11 +51,16 @@ const css = `
     justify-content: center;
     cursor: pointer;
     color: #aaa;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s, color 0.2s, opacity 0.2s;
   }
   .mobile-menu-btn:hover { background: rgba(255,255,255,0.13); color: #fff; }
 
-  /* Mobile overlay backdrop */
+  /* ── FIX: hide hamburger when drawer is open ── */
+  .mobile-menu-btn.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .mobile-backdrop {
     display: none;
     position: fixed;
@@ -66,7 +70,6 @@ const css = `
     backdrop-filter: blur(4px);
   }
 
-  /* Mobile sidebar drawer */
   .mobile-sidebar-drawer {
     display: none;
     position: fixed;
@@ -81,10 +84,7 @@ const css = `
     .mobile-menu-btn { display: flex; }
     .mobile-backdrop { display: block; }
     .mobile-sidebar-drawer { display: block; }
-
-    .app-main {
-      width: 100%;
-    }
+    .app-main { width: 100%; }
   }
 `;
 
@@ -93,7 +93,6 @@ export default function AppLayout() {
   const { isAuthenticated, authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Auth guard — waits for token restore to finish before redirecting
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/login", { replace: true });
@@ -110,9 +109,9 @@ export default function AppLayout() {
           <Sidebar />
         </div>
 
-        {/* Mobile hamburger */}
+        {/* Mobile hamburger — hidden when drawer is open to prevent overlap */}
         <button
-          className="mobile-menu-btn"
+          className={`mobile-menu-btn${mobileSidebarOpen ? " hidden" : ""}`}
           onClick={() => setMobileSidebarOpen(true)}
           aria-label="Open sidebar"
         >
@@ -123,7 +122,6 @@ export default function AppLayout() {
         <AnimatePresence>
           {mobileSidebarOpen && (
             <>
-              {/* Backdrop */}
               <motion.div
                 className="mobile-backdrop"
                 initial={{ opacity: 0 }}
@@ -131,7 +129,6 @@ export default function AppLayout() {
                 exit={{ opacity: 0 }}
                 onClick={() => setMobileSidebarOpen(false)}
               />
-              {/* Drawer */}
               <motion.div
                 className="mobile-sidebar-drawer"
                 initial={{ x: -280 }}

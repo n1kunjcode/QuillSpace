@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trash2, FileText, Folder, X, Paperclip, ChevronDown, Check, ExternalLink, PanelRight } from "lucide-react";
 import Modal from "./Modal";
 
-// Attachment URLs are now full Cloudinary URLs stored in the attachment's path field
+// Attachment URLs are full Cloudinary URLs stored in the attachment's path field
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@400;500;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
@@ -20,7 +20,6 @@ const css = `
     overflow: hidden;
   }
 
-  /* ── Left: writing pane ── */
   .editor-pane {
     flex: 1;
     display: flex;
@@ -63,7 +62,6 @@ const css = `
     flex-shrink: 0;
   }
 
-  /* Folder dropdown */
   .folder-trigger {
     display: flex;
     align-items: center;
@@ -120,7 +118,6 @@ const css = `
   .toolbar-sep { color: #222; user-select: none; }
   .toolbar-meta { font-size: 11px; color: #333; white-space: nowrap; }
 
-  /* Attachment toggle button in toolbar */
   .attach-toggle-btn {
     display: flex;
     align-items: center;
@@ -154,418 +151,184 @@ const css = `
     line-height: 1;
   }
 
-  /* Saving indicator */
-  .saving-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-  }
+  .saving-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
   .saving-label { font-size: 11px; color: #444; font-family: 'DM Sans', sans-serif; }
 
   .delete-btn {
-    padding: 7px;
-    background: none;
-    border: none;
-    border-radius: 8px;
-    color: #333;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+    padding: 7px; background: none; border: none; border-radius: 8px;
+    color: #333; cursor: pointer; display: flex; align-items: center;
     transition: color 0.2s, background 0.2s;
   }
   .delete-btn:hover { color: #f87171; background: rgba(248,113,113,0.1); }
 
-  /* Writing area */
-  .editor-scroll {
-    flex: 1;
-    overflow-y: auto;
-    position: relative;
-  }
+  .editor-scroll { flex: 1; overflow-y: auto; position: relative; }
   .editor-scroll::-webkit-scrollbar { width: 4px; }
   .editor-scroll::-webkit-scrollbar-track { background: transparent; }
   .editor-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
 
-  .editor-content {
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 48px 40px 80px;
-  }
-  @media (max-width: 768px) {
-    .editor-content { padding: 32px 20px 60px; }
-  }
+  .editor-content { max-width: 680px; margin: 0 auto; padding: 48px 40px 80px; }
+  @media (max-width: 768px) { .editor-content { padding: 32px 20px 60px; } }
 
   .editor-title {
-    width: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    resize: none;
-    overflow: hidden;
+    width: 100%; background: transparent; border: none; outline: none;
+    resize: none; overflow: hidden;
     font-family: 'Playfair Display', serif;
     font-size: clamp(26px, 4vw, 40px);
-    font-weight: 700;
-    color: #fff;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    display: block;
+    font-weight: 700; color: #fff; line-height: 1.2;
+    letter-spacing: -0.02em; display: block;
   }
   .editor-title::placeholder { color: #222; }
 
   .editor-divider {
-    width: 36px;
-    height: 2px;
+    width: 36px; height: 2px;
     background: rgba(245,158,11,0.3);
-    border-radius: 2px;
-    margin: 18px 0 26px;
+    border-radius: 2px; margin: 18px 0 26px;
   }
 
   .editor-body {
-    width: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    resize: none;
-    font-family: 'Lora', Georgia, serif;
-    font-size: 17px;
-    color: #aaa;
-    line-height: 1.9;
-    letter-spacing: 0.01em;
-    min-height: 60vh;
+    width: 100%; background: transparent; border: none; outline: none;
+    resize: none; font-family: 'Lora', Georgia, serif;
+    font-size: 17px; color: #aaa; line-height: 1.9;
+    letter-spacing: 0.01em; min-height: 60vh;
   }
-  @media (max-width: 768px) {
-    .editor-body { font-size: 16px; }
-  }
+  @media (max-width: 768px) { .editor-body { font-size: 16px; } }
   .editor-body::placeholder { color: #2a2a2a; }
 
   .wordcount {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 11px;
-    color: #2a2a2a;
-    margin-top: 24px;
-    justify-content: flex-end;
-    font-family: 'DM Sans', sans-serif;
-    user-select: none;
+    display: flex; align-items: center; gap: 10px; font-size: 11px;
+    color: #2a2a2a; margin-top: 24px; justify-content: flex-end;
+    font-family: 'DM Sans', sans-serif; user-select: none;
   }
 
-  /* ── Attachment Panel (right side, overlays editor) ── */
   .attach-panel {
-    width: 280px;
-    flex-shrink: 0;
-    height: 100%;
+    width: 280px; flex-shrink: 0; height: 100%;
     border-left: 1px solid rgba(255,255,255,0.07);
-    background: #111;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    background: #111; display: flex; flex-direction: column; overflow: hidden;
   }
   @media (max-width: 900px) {
-    .attach-panel {
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      z-index: 30;
-      box-shadow: -20px 0 60px rgba(0,0,0,0.5);
-    }
+    .attach-panel { position: absolute; right: 0; top: 0; bottom: 0; z-index: 30; box-shadow: -20px 0 60px rgba(0,0,0,0.5); }
   }
-  @media (max-width: 480px) {
-    .attach-panel { width: 100%; }
-  }
+  @media (max-width: 480px) { .attach-panel { width: 100%; } }
 
   .attach-panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0;
   }
   .attach-panel-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+    color: #666; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Sans', sans-serif;
   }
   .attach-panel-close {
-    background: none;
-    border: none;
-    color: #444;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    transition: color 0.2s, background 0.2s;
+    background: none; border: none; color: #444; cursor: pointer; padding: 4px;
+    border-radius: 6px; display: flex; align-items: center; transition: color 0.2s, background 0.2s;
   }
   .attach-panel-close:hover { color: #ccc; background: rgba(255,255,255,0.07); }
 
-  .attach-panel-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-  }
+  .attach-panel-body { flex: 1; overflow-y: auto; padding: 12px; }
   .attach-panel-body::-webkit-scrollbar { width: 3px; }
   .attach-panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 3px; }
 
   .attach-upload-btn {
-    width: 100%;
-    padding: 10px;
-    background: rgba(245,158,11,0.08);
-    border: 1px dashed rgba(245,158,11,0.25);
-    border-radius: 10px;
-    color: #f59e0b;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 12px;
+    width: 100%; padding: 10px; background: rgba(245,158,11,0.08);
+    border: 1px dashed rgba(245,158,11,0.25); border-radius: 10px; color: #f59e0b;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: background 0.2s, border-color 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 12px;
   }
   .attach-upload-btn:hover { background: rgba(245,158,11,0.13); border-color: rgba(245,158,11,0.4); }
 
   .attach-empty-panel {
-    text-align: center;
-    padding: 32px 16px;
-    color: #2a2a2a;
-    font-size: 12px;
-    font-family: 'DM Sans', sans-serif;
+    text-align: center; padding: 32px 16px; color: #2a2a2a;
+    font-size: 12px; font-family: 'DM Sans', sans-serif;
   }
 
   .attach-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    border-radius: 9px;
-    cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(255,255,255,0.02);
-    margin-bottom: 6px;
-    transition: background 0.15s, border-color 0.15s;
-    position: relative;
-    group: true;
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+    border-radius: 9px; cursor: pointer; border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02); margin-bottom: 6px;
+    transition: background 0.15s, border-color 0.15s; position: relative;
   }
   .attach-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
-  .attach-item.previewing {
-    background: rgba(245,158,11,0.08);
-    border-color: rgba(245,158,11,0.3);
-  }
+  .attach-item.previewing { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); }
 
   .attach-item-thumb {
-    width: 40px;
-    height: 40px;
-    border-radius: 7px;
-    overflow: hidden;
+    width: 40px; height: 40px; border-radius: 7px; overflow: hidden;
     background: rgba(255,255,255,0.04);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .attach-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-  .attach-item-info {
-    flex: 1;
-    min-width: 0;
-  }
+  .attach-item-info { flex: 1; min-width: 0; }
   .attach-item-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: #aaa;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 500; color: #aaa;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Sans', sans-serif;
   }
-  .attach-item-type {
-    font-size: 10px;
-    color: #333;
-    margin-top: 2px;
-    font-family: 'DM Sans', sans-serif;
-    text-transform: uppercase;
-  }
+  .attach-item-type { font-size: 10px; color: #333; margin-top: 2px; font-family: 'DM Sans', sans-serif; text-transform: uppercase; }
 
-  .attach-item-actions {
-    display: flex;
-    gap: 2px;
-    opacity: 0;
-    transition: opacity 0.15s;
-    flex-shrink: 0;
-  }
+  .attach-item-actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
   .attach-item:hover .attach-item-actions { opacity: 1; }
   .attach-action-btn {
-    background: none;
-    border: none;
-    color: #444;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 5px;
-    display: flex;
-    align-items: center;
-    transition: color 0.15s, background 0.15s;
+    background: none; border: none; color: #444; cursor: pointer; padding: 4px;
+    border-radius: 5px; display: flex; align-items: center; transition: color 0.15s, background 0.15s;
   }
   .attach-action-btn:hover { color: #ccc; background: rgba(255,255,255,0.08); }
   .attach-action-btn.danger:hover { color: #f87171; background: rgba(248,113,113,0.1); }
 
-  /* ── Split view: attachment preview ── */
   .split-preview {
-    width: 45%;
-    flex-shrink: 0;
-    height: 100%;
+    width: 45%; flex-shrink: 0; height: 100%;
     border-left: 1px solid rgba(255,255,255,0.07);
-    background: #0a0a0a;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    background: #0a0a0a; display: flex; flex-direction: column; overflow: hidden;
   }
-  @media (max-width: 900px) {
-    .split-preview { width: 50%; }
-  }
-  @media (max-width: 600px) {
-    .split-preview {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      z-index: 40;
-    }
-  }
+  @media (max-width: 900px) { .split-preview { width: 50%; } }
+  @media (max-width: 600px) { .split-preview { position: absolute; inset: 0; width: 100%; z-index: 40; } }
 
   .split-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    flex-shrink: 0;
-    background: rgba(10,10,10,0.9);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0; background: rgba(10,10,10,0.9);
   }
   .split-header-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: #666;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: 'DM Sans', sans-serif;
-    flex: 1;
-    min-width: 0;
-    margin-right: 8px;
+    font-size: 12px; font-weight: 500; color: #666;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-family: 'DM Sans', sans-serif; flex: 1; min-width: 0; margin-right: 8px;
   }
-  .split-header-btns {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
-  }
+  .split-header-btns { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
   .split-btn {
-    background: none;
-    border: none;
-    color: #444;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 7px;
-    display: flex;
-    align-items: center;
-    transition: color 0.2s, background 0.2s;
+    background: none; border: none; color: #444; cursor: pointer; padding: 6px;
+    border-radius: 7px; display: flex; align-items: center; transition: color 0.2s, background 0.2s;
   }
   .split-btn:hover { color: #ccc; background: rgba(255,255,255,0.07); }
 
-  .split-body {
-    flex: 1;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .split-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    padding: 16px;
-  }
-  .split-pdf {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-  .split-unknown {
-    text-align: center;
-    color: #333;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-  }
+  .split-body { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .split-image { max-width: 100%; max-height: 100%; object-fit: contain; padding: 16px; }
+  .split-pdf { width: 100%; height: 100%; border: none; }
+  .split-unknown { text-align: center; color: #333; font-family: 'DM Sans', sans-serif; font-size: 13px; }
 
-  /* Drag overlay */
   .drag-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 50;
-    background: rgba(245,158,11,0.06);
-    border: 2px dashed rgba(245,158,11,0.4);
-    border-radius: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
+    position: absolute; inset: 0; z-index: 50;
+    background: rgba(245,158,11,0.06); border: 2px dashed rgba(245,158,11,0.4);
+    display: flex; align-items: center; justify-content: center; pointer-events: none;
   }
-  .drag-label {
-    text-align: center;
-    color: #f59e0b;
-    font-family: 'DM Sans', sans-serif;
-  }
+  .drag-label { text-align: center; color: #f59e0b; font-family: 'DM Sans', sans-serif; }
 
-  /* Empty state */
   .editor-empty {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #0e0e0e;
-    position: relative;
-    overflow: hidden;
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: #0e0e0e; position: relative; overflow: hidden;
   }
   .editor-empty-watermark {
-    position: absolute;
-    font-size: 260px;
-    color: rgba(255,255,255,0.012);
-    pointer-events: none;
-    user-select: none;
-    line-height: 1;
+    position: absolute; font-size: 260px; color: rgba(255,255,255,0.012);
+    pointer-events: none; user-select: none; line-height: 1;
   }
   .editor-empty-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: #2a2a2a;
-    margin-bottom: 8px;
-    letter-spacing: -0.01em;
-    text-align: center;
+    font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;
+    color: #2a2a2a; margin-bottom: 8px; letter-spacing: -0.01em; text-align: center;
   }
-  .editor-empty-sub {
-    font-size: 13px;
-    color: #1f1f1f;
-    font-family: 'DM Sans', sans-serif;
-    text-align: center;
-  }
+  .editor-empty-sub { font-size: 13px; color: #1f1f1f; font-family: 'DM Sans', sans-serif; text-align: center; }
 
   .modal-body-text { font-size: 14px; color: #ccc; font-family: 'DM Sans', sans-serif; }
-
   @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.35} }
 `;
 
-// ─── FolderDropdown ─────────────────────────────────────────────
 function FolderDropdown({ folders, activeNote, onMove }) {
   const [open, setOpen] = useState(false);
   const [opensUp, setOpensUp] = useState(false);
@@ -629,148 +392,83 @@ function FolderDropdown({ folders, activeNote, onMove }) {
   );
 }
 
-// ─── AttachmentPanel ─────────────────────────────────────────────
 function AttachmentPanel({ note, onClose, onPreview, previewingFile, onDelete, onUpload }) {
   const attachments = note?.attachments || [];
-
   return (
-    <motion.div
-      className="attach-panel"
-      initial={{ width: 0, opacity: 0 }}
-      animate={{ width: 280, opacity: 1 }}
-      exit={{ width: 0, opacity: 0 }}
-      transition={{ type: "spring", damping: 28, stiffness: 260 }}
-    >
+    <motion.div className="attach-panel"
+      initial={{ width: 0, opacity: 0 }} animate={{ width: 280, opacity: 1 }}
+      exit={{ width: 0, opacity: 0 }} transition={{ type: "spring", damping: 28, stiffness: 260 }}>
       <div className="attach-panel-header">
         <div className="attach-panel-title">
           <Paperclip size={12} />
           Attachments
-          {attachments.length > 0 && (
-            <span style={{ color: "#444", fontWeight: 400 }}>({attachments.length})</span>
-          )}
+          {attachments.length > 0 && <span style={{ color: "#444", fontWeight: 400 }}>({attachments.length})</span>}
         </div>
         <button className="attach-panel-close" onClick={onClose}><X size={14} /></button>
       </div>
-
       <div className="attach-panel-body">
-        {/* Upload button */}
         <label className="attach-upload-btn">
-          <Paperclip size={13} />
-          Attach file
-          <input
-            type="file"
-            style={{ display: "none" }}
-            accept="image/*,application/pdf"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (file) await onUpload(file);
-              e.target.value = "";
-            }}
-          />
+          <Paperclip size={13} /> Attach file
+          <input type="file" style={{ display: "none" }} accept="image/*,application/pdf"
+            onChange={async (e) => { const file = e.target.files?.[0]; if (file) await onUpload(file); e.target.value = ""; }} />
         </label>
-
         {attachments.length === 0 ? (
           <div className="attach-empty-panel">
             <Paperclip size={20} style={{ margin: "0 auto 8px", display: "block", opacity: 0.2 }} />
             No attachments yet.<br />Drop files into the editor or click above.
           </div>
-        ) : (
-          attachments.map((file, idx) => {
-            const isPreviewing = previewingFile?.filename === file.filename;
-            const ext = file.originalName?.split(".").pop()?.toUpperCase() || "FILE";
-            return (
-              <div
-                key={idx}
-                className={`attach-item${isPreviewing ? " previewing" : ""}`}
-                onClick={() => onPreview(isPreviewing ? null : file)}
-              >
-                <div className="attach-item-thumb">
-                  {file.mimetype?.startsWith("image/") ? (
-                    <img src={file.path} alt={file.originalName} />
-                  ) : (
-                    <FileText size={18} style={{ color: "#444" }} />
-                  )}
-                </div>
-                <div className="attach-item-info">
-                  <div className="attach-item-name">{file.originalName}</div>
-                  <div className="attach-item-type">{ext}</div>
-                </div>
-                <div className="attach-item-actions">
-                  <a
-                    href={file.path}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="attach-action-btn"
-                    onClick={e => e.stopPropagation()}
-                    title="Open in new tab"
-                  >
-                    <ExternalLink size={12} />
-                  </a>
-                  <button
-                    className="attach-action-btn danger"
-                    onClick={e => { e.stopPropagation(); onDelete(idx); }}
-                    title="Delete"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
+        ) : attachments.map((file, idx) => {
+          const isPreviewing = previewingFile?.filename === file.filename;
+          const ext = file.originalName?.split(".").pop()?.toUpperCase() || "FILE";
+          return (
+            <div key={idx} className={`attach-item${isPreviewing ? " previewing" : ""}`}
+              onClick={() => onPreview(isPreviewing ? null : file)}>
+              <div className="attach-item-thumb">
+                {file.mimetype?.startsWith("image/")
+                  ? <img src={file.path} alt={file.originalName} />
+                  : <FileText size={18} style={{ color: "#444" }} />}
               </div>
-            );
-          })
-        )}
+              <div className="attach-item-info">
+                <div className="attach-item-name">{file.originalName}</div>
+                <div className="attach-item-type">{ext}</div>
+              </div>
+              <div className="attach-item-actions">
+                <a href={file.path} target="_blank" rel="noreferrer" className="attach-action-btn"
+                  onClick={e => e.stopPropagation()} title="Open in new tab"><ExternalLink size={12} /></a>
+                <button className="attach-action-btn danger"
+                  onClick={e => { e.stopPropagation(); onDelete(idx); }} title="Delete"><Trash2 size={12} /></button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </motion.div>
   );
 }
 
-// ─── SplitPreview ─────────────────────────────────────────────────
 function SplitPreview({ file, onClose }) {
   return (
-    <motion.div
-      className="split-preview"
-      initial={{ width: 0, opacity: 0 }}
-      animate={{ width: "45%", opacity: 1 }}
-      exit={{ width: 0, opacity: 0 }}
-      transition={{ type: "spring", damping: 28, stiffness: 260 }}
-    >
+    <motion.div className="split-preview"
+      initial={{ width: 0, opacity: 0 }} animate={{ width: "45%", opacity: 1 }}
+      exit={{ width: 0, opacity: 0 }} transition={{ type: "spring", damping: 28, stiffness: 260 }}>
       <div className="split-header">
         <span className="split-header-name">{file.originalName}</span>
         <div className="split-header-btns">
-          <a
-            href={file.path}
-            target="_blank"
-            rel="noreferrer"
-            className="split-btn"
-            title="Open in new tab"
-          >
-            <ExternalLink size={14} />
-          </a>
-          <button className="split-btn" onClick={onClose} title="Close preview">
-            <X size={14} />
-          </button>
+          <a href={file.path} target="_blank" rel="noreferrer" className="split-btn" title="Open in new tab"><ExternalLink size={14} /></a>
+          <button className="split-btn" onClick={onClose} title="Close preview"><X size={14} /></button>
         </div>
       </div>
       <div className="split-body">
         {file.mimetype?.startsWith("image/") ? (
-          <img
-            src={file.path}
-            alt={file.originalName}
-            className="split-image"
-          />
+          <img src={file.path} alt={file.originalName} className="split-image" />
         ) : file.mimetype === "application/pdf" ? (
-          <iframe
-            src={file.path}
-            className="split-pdf"
-            title={file.originalName}
-          />
+          <iframe src={file.path} className="split-pdf" title={file.originalName} />
         ) : (
           <div className="split-unknown">
             <FileText size={32} style={{ margin: "0 auto 12px", display: "block", color: "#333" }} />
             <p>Preview not available</p>
             <a href={file.path} target="_blank" rel="noreferrer"
-              style={{ color: "#f59e0b", fontSize: 12, marginTop: 8, display: "inline-block" }}>
-              Open file ↗
-            </a>
+              style={{ color: "#f59e0b", fontSize: 12, marginTop: 8, display: "inline-block" }}>Open file ↗</a>
           </div>
         )}
       </div>
@@ -778,32 +476,23 @@ function SplitPreview({ file, onClose }) {
   );
 }
 
-// ─── SavingIndicator ──────────────────────────────────────────────
 function SavingIndicator({ isSaving, visible }) {
   if (!visible) return null;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      <span
-        className="saving-dot"
-        style={{
-          background: isSaving ? "#f59e0b" : "#22c55e",
-          animation: isSaving ? "pulse-dot 1s infinite" : "none",
-        }}
-      />
+      <span className="saving-dot" style={{ background: isSaving ? "#f59e0b" : "#22c55e", animation: isSaving ? "pulse-dot 1s infinite" : "none" }} />
       <span className="saving-label">{isSaving ? "Saving" : "Saved"}</span>
     </div>
   );
 }
 
-// ─── Main Editor ─────────────────────────────────────────────────
 export default function Editor() {
   const {
     activeNote, setActiveNote,
     editorMode, setEditorMode,
     activeFolder, setActiveFolder,
     notes, setNotes,
-    folders,
-    refreshData,
+    folders, refreshData,
     attachPanelOpen, setAttachPanelOpen,
     splitAttachment, setSplitAttachment,
   } = useApp();
@@ -817,15 +506,28 @@ export default function Editor() {
   const [isDragging, setIsDragging] = useState(false);
 
   const saveTimeout = useRef(null);
+  const createTimeout = useRef(null);   // debounce timer for new note creation
   const isCreating = useRef(false);
   const titleRef = useRef(null);
 
   useEffect(() => {
     if (editorMode === "new") {
-      setTitle(""); setContent(""); setHasSaved(false); isCreating.current = false;
+      setTitle(""); setContent(""); setHasSaved(false);
+      isCreating.current = false;
+      clearTimeout(createTimeout.current);
     }
     if (editorMode === "existing" && activeNote) {
-      setTitle(activeNote.title || ""); setContent(activeNote.content || ""); setHasSaved(true);
+      // ── CRITICAL FIX ──────────────────────────────────────────────────────────
+      // When createNote() resolves it sets editorMode → "existing" which fires
+      // this effect. If the user is STILL typing in the title field, do NOT
+      // overwrite their local title state with the server value ("H", etc.)
+      // Only sync from server when the title textarea is NOT focused.
+      if (document.activeElement !== titleRef.current) {
+        setTitle(activeNote.title || "");
+      }
+      // ─────────────────────────────────────────────────────────────────────────
+      setContent(activeNote.content || "");
+      setHasSaved(true);
       if (activeNote.folderId) {
         const f = folders.find(f => f._id === activeNote.folderId);
         if (f) setActiveFolder(f);
@@ -833,7 +535,6 @@ export default function Editor() {
     }
   }, [editorMode, activeNote?._id]);
 
-  // Auto-resize title textarea
   useEffect(() => {
     if (titleRef.current) {
       titleRef.current.style.height = "auto";
@@ -846,9 +547,16 @@ export default function Editor() {
     isCreating.current = true;
     try {
       const res = await api.post("/notes", { title: newTitle, content: "", folderId: activeFolder?._id || null });
-      setActiveNote(res.data); setEditorMode("existing");
-      setNotes(prev => [res.data, ...prev]); setHasSaved(true); refreshData();
-    } catch (err) { console.error(err); isCreating.current = false; }
+      // Do NOT call setTitle here — user is mid-typing, keep their local state
+      setActiveNote(res.data);
+      setEditorMode("existing");
+      setNotes(prev => [res.data, ...prev]);
+      setHasSaved(true);
+      refreshData();
+    } catch (err) {
+      console.error(err);
+      isCreating.current = false;
+    }
   };
 
   const scheduleSave = (t, c) => {
@@ -858,21 +566,38 @@ export default function Editor() {
     saveTimeout.current = setTimeout(async () => {
       try {
         const res = await api.patch(`/notes/${activeNote._id}`, { title: t, content: c });
-        setActiveNote(res.data);
-        setNotes(prev => prev.map(n => n._id === activeNote._id ? res.data : n));
+        // Only sync server response to title if user isn't actively typing it
+        if (document.activeElement !== titleRef.current) {
+          setActiveNote(res.data);
+        } else {
+          setNotes(prev => prev.map(n => n._id === activeNote._id ? res.data : n));
+        }
         setIsSaving(false);
       } catch (err) { console.error(err); setIsSaving(false); }
     }, 800);
   };
 
   const handleTitleChange = (e) => {
-    const v = e.target.value; setTitle(v);
-    if (editorMode === "new" && v.trim()) { createNote(v); return; }
+    const v = e.target.value;
+    setTitle(v);
+
+    if (editorMode === "new") {
+      // ── FIX: debounce creation — don't fire on first keypress ──────────────
+      // Wait 1s of idle typing before creating the note in the DB.
+      // This gives the user time to type a full title without interruption.
+      clearTimeout(createTimeout.current);
+      if (v.trim()) {
+        createTimeout.current = setTimeout(() => createNote(v), 1000);
+      }
+      return;
+    }
+
     if (editorMode === "existing") scheduleSave(v, content);
   };
 
   const handleContentChange = (e) => {
-    const v = e.target.value; setContent(v);
+    const v = e.target.value;
+    setContent(v);
     if (editorMode === "existing") scheduleSave(title, v);
   };
 
@@ -917,7 +642,6 @@ export default function Editor() {
       setActiveNote(res.data);
       setNotes(prev => prev.map(n => n._id === activeNote._id ? res.data : n));
       setAttachmentToDelete(null);
-      // If we deleted the currently previewed file, close split view
       if (splitAttachment) {
         const stillExists = res.data.attachments?.some(a => a.filename === splitAttachment.filename);
         if (!stillExists) setSplitAttachment(null);
@@ -929,11 +653,7 @@ export default function Editor() {
     const fd = new FormData(); fd.append("file", file);
     try {
       const up = await api.post("/upload", fd, { headers: { "Content-Type": "multipart/form-data" } });
-      const att = {
-        originalName: up.data.originalName, filename: up.data.filename,
-        path: up.data.path, mimetype: up.data.mimetype,
-        size: up.data.size, createdAt: new Date()
-      };
+      const att = { originalName: up.data.originalName, filename: up.data.filename, path: up.data.path, mimetype: up.data.mimetype, size: up.data.size, createdAt: new Date() };
       const updated = [...(activeNote.attachments || []), att];
       const res = await api.patch(`/notes/${activeNote._id}`, { attachments: updated });
       setActiveNote(res.data);
@@ -946,13 +666,8 @@ export default function Editor() {
     if (!activeNote) return;
     const file = e.dataTransfer.files?.[0];
     if (file && (file.type.startsWith("image/") || file.type === "application/pdf")) {
-      await uploadFile(file);
-      setAttachPanelOpen(true);
+      await uploadFile(file); setAttachPanelOpen(true);
     }
-  };
-
-  const handlePreview = (file) => {
-    setSplitAttachment(file);
   };
 
   const attachCount = activeNote?.attachments?.length || 0;
@@ -961,7 +676,6 @@ export default function Editor() {
     : null;
   const words = content.trim() ? content.trim().split(/\s+/).length : 0;
 
-  // Empty state
   if (editorMode !== "new" && !activeNote) {
     return (
       <>
@@ -980,13 +694,11 @@ export default function Editor() {
   return (
     <>
       <style>{css}</style>
-      <div
-        className="editor-root"
+      <div className="editor-root"
         onDragOver={e => { e.preventDefault(); if (activeNote) setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
-        onDrop={handleDrop}
-      >
-        {/* Drag overlay */}
+        onDrop={handleDrop}>
+
         <AnimatePresence>
           {isDragging && (
             <motion.div className="drag-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -998,89 +710,47 @@ export default function Editor() {
           )}
         </AnimatePresence>
 
-        {/* ── Writing pane ── */}
         <div className="editor-pane">
-          {/* Toolbar */}
           <div className="editor-toolbar">
             <div className="toolbar-left">
               {editorMode === "existing" && activeNote && (
                 <>
                   <FolderDropdown folders={folders} activeNote={activeNote} onMove={handleMoveNote} />
-                  {lastEdited && (
-                    <>
-                      <span className="toolbar-sep">·</span>
-                      <span className="toolbar-meta">{lastEdited}</span>
-                    </>
-                  )}
+                  {lastEdited && <><span className="toolbar-sep">·</span><span className="toolbar-meta">{lastEdited}</span></>}
                 </>
               )}
             </div>
             <div className="toolbar-right">
               <SavingIndicator isSaving={isSaving} visible={editorMode === "existing" && hasSaved} />
-
-              {/* Attachment panel toggle */}
               {editorMode === "existing" && activeNote && (
-                <button
-                  className={`attach-toggle-btn${attachPanelOpen ? " active" : ""}`}
-                  onClick={() => {
-                    setAttachPanelOpen(o => !o);
-                    if (attachPanelOpen) setSplitAttachment(null);
-                  }}
-                  title="Attachments"
-                >
+                <button className={`attach-toggle-btn${attachPanelOpen ? " active" : ""}`}
+                  onClick={() => { setAttachPanelOpen(o => !o); if (attachPanelOpen) setSplitAttachment(null); }}
+                  title="Attachments">
                   <Paperclip size={13} />
-                  <span style={{ display: "none" }} className="attach-toggle-label">Files</span>
-                  {attachCount > 0 && (
-                    <span className="attach-count-badge">{attachCount}</span>
-                  )}
+                  {attachCount > 0 && <span className="attach-count-badge">{attachCount}</span>}
                 </button>
               )}
-
-              {/* Split view toggle (only when attachment previewing) */}
               {splitAttachment && (
-                <button
-                  className="attach-toggle-btn active"
-                  onClick={() => setSplitAttachment(null)}
-                  title="Close preview"
-                  style={{ gap: 4 }}
-                >
+                <button className="attach-toggle-btn active" onClick={() => setSplitAttachment(null)} title="Close preview" style={{ gap: 4 }}>
                   <PanelRight size={13} />
                 </button>
               )}
-
               {editorMode === "existing" && activeNote && (
-                <motion.button
-                  className="delete-btn"
-                  whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsDeleteModalOpen(true)}
-                  title="Delete note"
-                >
+                <motion.button className="delete-btn" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsDeleteModalOpen(true)} title="Delete note">
                   <Trash2 size={15} />
                 </motion.button>
               )}
             </div>
           </div>
 
-          {/* Writing area */}
           <div className="editor-scroll">
             <div className="editor-content">
-              <textarea
-                ref={titleRef}
-                className="editor-title"
-                placeholder="Untitled"
-                value={title}
-                onChange={handleTitleChange}
-                autoFocus
-                rows={1}
-              />
+              <textarea ref={titleRef} className="editor-title" placeholder="Untitled"
+                value={title} onChange={handleTitleChange} autoFocus rows={1} />
               <div className="editor-divider" />
-              <textarea
-                className="editor-body"
-                placeholder="Begin writing…"
-                value={content}
-                onChange={handleContentChange}
-                onKeyDown={handleContentKeyDown}
-              />
+              <textarea className="editor-body" placeholder="Begin writing…"
+                value={content} onChange={handleContentChange} onKeyDown={handleContentKeyDown} />
               {(content || title) && (
                 <div className="wordcount">
                   <span>{words} {words === 1 ? "word" : "words"}</span>
@@ -1092,46 +762,29 @@ export default function Editor() {
           </div>
         </div>
 
-        {/* ── Attachment panel ── */}
         <AnimatePresence>
           {attachPanelOpen && activeNote && (
-            <AttachmentPanel
-              note={activeNote}
+            <AttachmentPanel note={activeNote}
               onClose={() => { setAttachPanelOpen(false); setSplitAttachment(null); }}
-              onPreview={handlePreview}
+              onPreview={(file) => setSplitAttachment(file)}
               previewingFile={splitAttachment}
               onDelete={(idx) => handleDeleteAttachment(idx)}
-              onUpload={uploadFile}
-            />
+              onUpload={uploadFile} />
           )}
         </AnimatePresence>
 
-        {/* ── Split preview ── */}
         <AnimatePresence>
-          {splitAttachment && (
-            <SplitPreview
-              file={splitAttachment}
-              onClose={() => setSplitAttachment(null)}
-            />
-          )}
+          {splitAttachment && <SplitPreview file={splitAttachment} onClose={() => setSplitAttachment(null)} />}
         </AnimatePresence>
       </div>
 
-      {/* Delete Note Modal */}
       <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Note?"
-        actions={<>
-          <button onClick={() => setIsDeleteModalOpen(false)} style={cancelStyle}>Cancel</button>
-          <button onClick={handleDeleteNote} style={deleteStyle}>Delete</button>
-        </>}>
+        actions={<><button onClick={() => setIsDeleteModalOpen(false)} style={cancelStyle}>Cancel</button><button onClick={handleDeleteNote} style={deleteStyle}>Delete</button></>}>
         <p className="modal-body-text">Delete <strong style={{ color: "#fff" }}>{activeNote?.title || "this note"}</strong>?</p>
       </Modal>
 
-      {/* Delete Attachment Modal */}
       <Modal isOpen={attachmentToDelete !== null} onClose={() => setAttachmentToDelete(null)} title="Remove Attachment?"
-        actions={<>
-          <button onClick={() => setAttachmentToDelete(null)} style={cancelStyle}>Cancel</button>
-          <button onClick={() => handleDeleteAttachment()} style={deleteStyle}>Remove</button>
-        </>}>
+        actions={<><button onClick={() => setAttachmentToDelete(null)} style={cancelStyle}>Cancel</button><button onClick={() => handleDeleteAttachment()} style={deleteStyle}>Remove</button></>}>
         <p className="modal-body-text">Remove this attachment from the note?</p>
       </Modal>
     </>
