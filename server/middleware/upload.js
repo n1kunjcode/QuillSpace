@@ -10,16 +10,20 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
     cloudinary,
-    params: {
-        folder: "quillspace",
-        resource_type: "auto",          // handles images, PDFs, docs
-        allowed_formats: ["jpg", "jpeg", "png", "gif", "webp", "pdf", "txt", "doc", "docx"],
-        public_id: (req, file) => {
-            const base = file.originalname
-                .replace(/\.[^/.]+$/, "")
-                .replace(/[^a-zA-Z0-9_-]/g, "_");
-            return `${Date.now()}-${base}`;
-        },
+    params: async (req, file) => {
+        const isPdf = file.mimetype === "application/pdf";
+        const isImage = file.mimetype.startsWith("image/");
+
+        const base = file.originalname
+            .replace(/\.[^/.]+$/, "")
+            .replace(/[^a-zA-Z0-9_-]/g, "_");
+
+        return {
+            folder: "quillspace",
+            resource_type: isImage ? "image" : "raw",  // raw = PDFs, docs, txt
+            public_id: `${Date.now()}-${base}`,
+            // allowed_formats not needed when resource_type is explicit
+        };
     },
 });
 
@@ -38,8 +42,6 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// Cloudinary enforces its own plan limits — no arbitrary cap needed on our end
-// Set a generous 50MB multer limit so the multipart parser doesn't reject large PDFs first
 const upload = multer({
     storage,
     limits: { fileSize: 50 * 1024 * 1024 },
