@@ -462,7 +462,35 @@ function SplitPreview({ file, onClose }) {
         {file.mimetype?.startsWith("image/") ? (
           <img src={file.path} alt={file.originalName} className="split-image" />
         ) : file.mimetype === "application/pdf" ? (
-          <iframe src={file.path} className="split-pdf" title={file.originalName} />
+          <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#0a0a0a", padding: 24, textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}>
+            <FileText size={40} style={{ color: "#444", marginBottom: 16 }} />
+            <div style={{ color: "#ddd", fontSize: 13, fontWeight: 500, marginBottom: 6, wordBreak: "break-all", maxWidth: "90%" }}>
+              {file.originalName}
+            </div>
+            <div style={{ color: "#666", fontSize: 12, marginBottom: 24 }}>
+              PDF preview not supported in browser — click to open
+            </div>
+            <button
+              onClick={() => window.open(file.path, "_blank")}
+              style={{
+                display: "flex", alignItems: "center", gap: 8,
+                background: "rgba(245,158,11,0.1)",
+                border: "1px solid rgba(245,158,11,0.3)",
+                color: "#f59e0b",
+                padding: "10px 18px",
+                borderRadius: 8,
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 13,
+                fontWeight: 500,
+                cursor: "pointer",
+                transition: "background 0.2s"
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(245,158,11,0.18)"}
+              onMouseLeave={e => e.currentTarget.style.background = "rgba(245,158,11,0.1)"}
+            >
+              <ExternalLink size={14} /> Open PDF
+            </button>
+          </div>
         ) : (
           <div className="split-unknown">
             <FileText size={32} style={{ margin: "0 auto 12px", display: "block", color: "#333" }} />
